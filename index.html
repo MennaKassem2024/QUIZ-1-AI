@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz 1 (AI) – Robotics Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7f1;--card:#fff;--ink:#1d2a1d;--mute:#5d6b5d;--line:#d5dfd0;--green:#3f8f2f;--amber:#f2b705;--bad:#b3261e;--sel:#e6f3df}
+@media (prefers-color-scheme:dark){:root{--bg:#121812;--card:#1b241b;--ink:#e8f0e4;--mute:#a3b2a0;--line:#33432f;--green:#6cc04f;--sel:#243a1f;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,Arial,sans-serif;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+header{border-bottom:6px solid var(--green);padding-bottom:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:end;gap:12px}
+h1{margin:0;font-size:1.6rem}
+header span{color:var(--mute);font-size:.95rem}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.info .full{grid-column:1/-1}
+label.f{display:block;font-weight:600;font-size:.95rem}
+input[type=text],input[type=email]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+input:focus-visible,button:focus-visible,.opt:focus-within{outline:3px solid var(--amber);outline-offset:1px}
+h2{margin:28px 0 4px;font-size:1.2rem;border-inline-start:6px solid var(--amber);padding-inline-start:10px}
+.pts{color:var(--mute);font-size:.9rem;margin:0 0 12px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.q .ar{font-weight:700}
+.q .en{color:var(--mute);direction:ltr;text-align:left;font-size:.95rem;margin-bottom:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;margin-top:6px;cursor:pointer}
+.opt:has(input:checked){background:var(--sel);border-color:var(--green)}
+.opt input{margin-top:8px}
+.opt .t{flex:1}
+.opt .t small{display:block;color:var(--mute);direction:ltr;text-align:left}
+.opt code{direction:ltr;unicode-bidi:isolate;font-family:Consolas,monospace}
+.tf{display:flex;gap:10px;margin-top:8px}
+.tf .opt{flex:1;margin:0;justify-content:center;align-items:center}
+.tf .opt input{margin:0}
+.miss{border-color:var(--bad)}
+button{font:inherit;font-weight:700;background:var(--green);color:#fff;border:0;border-radius:8px;padding:12px 28px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+#msg{margin-top:14px;font-weight:600}
+#msg.err{color:var(--bad)}
+#result{display:none;background:var(--card);border:2px solid var(--green);border-radius:10px;padding:22px;text-align:center}
+#result b{font-size:2.4rem;display:block;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Quiz 1 (AI)</h1><span>Robotics Club</span></header>
+
+<div id="formArea">
+<div class="info">
+  <label class="f">الاسم / Name<input type="text" id="name" autocomplete="name"></label>
+  <label class="f">المجموعة / Group<input type="text" id="group"></label>
+  <label class="f full">الإيميل لاستلام الدرجة / Email (to receive your score)<input type="email" id="email" dir="ltr" autocomplete="email"></label>
+</div>
+
+<h2>Q1) اختر الإجابة الصحيحة / Choose the correct answer</h2>
+<p class="pts">18 درجة – 1.8 لكل سؤال</p>
+<div id="mcq"></div>
+
+<h2>Q2) صح أم خطأ / True or False</h2>
+<p class="pts">10 درجات – درجة لكل سؤال</p>
+<div id="tf"></div>
+
+<button id="send" type="button">إرسال الإجابات / Submit</button>
+<div id="msg" role="status"></div>
+</div>
+
+<div id="result"></div>
+</div>
+
+<script>
+// الصق هنا رابط الـ Web app من Apps Script
+const SCRIPT_URL = "PASTE_WEB_APP_URL_HERE";
+
+const MCQ = [
+ ["ما هي وظيفة مكتبة pyserial في بايثون؟","What is the function of the pyserial library in Python?",
+  [["تعديل واجهة المستخدم الرسومية","Modify the graphical user interface"],["التعامل مع المنافذ التسلسلية","Handle serial ports"],["تشغيل ملفات الفيديو","Play video files"],["إدارة قواعد البيانات","Manage databases"]]],
+ ["أي من الأسطر التالية تُستخدم لإنشاء اتصال تسلسلي مع الأردوينو في بايثون؟","Which of the following lines is used to establish a serial connection with Arduino in Python?",
+  [["","serial.begin(9600)"],["","import pyserial"],["","ser = serial.Serial('COM1', 9600)"],["","ser.send(\"Hello\")"]],true],
+ ["في كود الأردوينو، ماذا تفعل الدالة random(0, 1023)؟","What does the function random(0, 1023) do in the Arduino code?",
+  [["تقرأ قيمة من حساس","Reads a sensor value"],["تولد رقم عشوائي بين 0 و1023","Generates a random number between 0 and 1023"],["ترسل رسالة إلى بايثون","Sends a message to Python"],["تغلق الاتصال التسلسلي","Closes the serial connection"]]],
+ ["ما وظيفة السطر data = arduino.readline().decode().strip() في كود بايثون؟","What is the function of the line data = arduino.readline().decode().strip() in Python code?",
+  [["إرسال بيانات إلى الأردوينو","Send data to Arduino"],["قراءة البيانات القادمة من الأردوينو ومعالجتها","Read and process data from Arduino"],["طباعة بيانات ثابتة","Print static data"],["إغلاق الاتصال التسلسلي","Close the serial connection"]]],
+ ["في كود Arduino، ما وظيفة الدالة Serial.read()؟","In Arduino code, what is the purpose of Serial.read()?",
+  [["إرسال بيانات إلى الحاسوب","Send data to the computer"],["قراءة البيانات القادمة من البلوتوث","Read incoming data from Bluetooth"],["تفعيل إضاءة LED","Activate the LED"],["إغلاق الاتصال التسلسلي","Close the serial connection"]]],
+ ["ما وظيفة مكتبة tkinter في بايثون؟","What is the purpose of the tkinter library in Python?",
+  [["التعامل مع المنافذ التسلسلية","Handle serial ports"],["تنفيذ العمليات الرياضية","Perform mathematical operations"],["إنشاء واجهات المستخدم الرسومية","Create graphical user interfaces (GUIs)"],["التحكم في أجهزة البلوتوث","Control Bluetooth devices"]]],
+ ["أي من الأوامر التالية تُستخدم لإرسال البيانات من بايثون إلى الأردوينو عبر البلوتوث؟","Which of the following commands is used to send data from Python to Arduino via Bluetooth?",
+  [["","ser.read()"],["","ser.write()"],["","print()"],["","Serial.begin()"]],true],
+ ["ما وظيفة دالة recognize_google() في مكتبة SpeechRecognition؟","What is the function of recognize_google() in the SpeechRecognition library?",
+  [["تسجيل الصوت","Record audio"],["تشغيل ملف صوتي","Play audio file"],["تحويل الصوت إلى نص","Convert speech to text"],["إرسال أوامر عبر البلوتوث","Send commands over Bluetooth"]]],
+ ["ما الوظيفة الأساسية لمكتبة serial في بايثون؟","What is the main function of the serial library in Python in this context?",
+  [["التحكم في الذاكرة","Memory control"],["إنشاء واجهات رسومية","Create GUI interfaces"],["التواصل مع الأجهزة عبر المنفذ التسلسلي","Communicate with devices via serial port"],["تسجيل الصوت من المايكروفون","Record audio from microphone"]]],
+ ["ما الهدف من استخدام adjust_for_ambient_noise() في كود التعرف على الصوت؟","What is the purpose of adjust_for_ambient_noise() in the speech recognition code?",
+  [["تقليل حجم الصوت المسجل","Reduce recorded sound volume"],["تحسين جودة واجهة المستخدم","Improve GUI appearance"],["تعديل الميكروفون ليتجاهل الضوضاء الخلفية","Adjust the mic to ignore background noise"],["إرسال الأوامر إلى الأردوينو","Send commands to Arduino"]]]
+];
+
+const TF = [
+ ["مكتبة pyserial تُستخدم في بايثون للتعامل مع المنافذ التسلسلية.","The pyserial library is used in Python to handle serial ports."],
+ ["في مكتبة التعرف على الصوت، recognize_google() تُستخدم لتسجيل الصوت.","In the speech recognition library, recognize_google() is used to record audio."],
+ ["يمكن التحكم في حركة الروبوت باستخدام الكيبورد والماوس معًا في واجهة Tkinter.","The robot's movement can be controlled using keyboard and mouse together in a Tkinter interface."],
+ ["تُستخدم adjust_for_ambient_noise() لتحسين واجهة المستخدم الرسومية.","adjust_for_ambient_noise() is used to improve the graphical user interface."],
+ ["في كود Tkinter، لا يمكن ربط الأزرار بأوامر باستخدام lambda.","In Tkinter code, buttons cannot be linked to commands using lambda."],
+ ["التطبيق الصوتي يقوم تلقائيًا بإرسال أوامر إلى الأردوينو دون استخدام المنفذ التسلسلي serial.","The voice app automatically sends commands to Arduino without using the serial port."],
+ ["عند استخدام try...except في بايثون، يتم التعامل مع الأخطاء المحتملة.","When using try...except in Python, possible errors are handled."],
+ ["في كود بايثون، ser.write(b'1') تعني إرسال القيمة 1 كرقم صحيح (int) إلى الأردوينو.","In Python code, ser.write(b'1') means sending the value 1 as an integer (int) to Arduino."],
+ ["Speech Recognition لا يحتاج إلى مكتبات خارجية ليعمل، فهو مدمج في بايثون افتراضيًا.","Speech Recognition needs no external libraries; it is built into Python by default."],
+ ["تُستخدم pinMode في الأردوينو لتحديد ما إذا كان الطرف (pin) سيكون مدخل أو مخرج.","pinMode in Arduino is used to define whether a pin will be input or output."]
+];
+
+const L = ["أ","ب","ج","د"], E = ["a","b","c","d"];
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+document.getElementById("mcq").innerHTML = MCQ.map((q,i)=>{
+  const opts = q[2].map((o,j)=>{
+    const body = q[3] ? `<code>${esc(o[1])}</code>` : `${esc(o[0])}<small>${esc(o[1])}</small>`;
+    return `<label class="opt"><input type="radio" name="m${i}" value="${j}"><span class="t"><b>${E[j]})</b> ${body}</span></label>`;
+  }).join("");
+  return `<div class="q" id="qm${i}"><div class="ar">(${i+1}) ${esc(q[0])}</div><div class="en">${esc(q[1])}</div>${opts}</div>`;
+}).join("");
+
+document.getElementById("tf").innerHTML = TF.map((q,i)=>`
+  <div class="q" id="qt${i}"><div class="ar">${i+1}) ${esc(q[0])}</div><div class="en">${esc(q[1])}</div>
+  <div class="tf"><label class="opt"><input type="radio" name="t${i}" value="1"> صح / True</label>
+  <label class="opt"><input type="radio" name="t${i}" value="0"> خطأ / False</label></div></div>`).join("");
+
+const $ = id => document.getElementById(id);
+const val = n => { const r=document.querySelector(`input[name="${n}"]:checked`); return r ? +r.value : null; };
+
+$("send").onclick = async () => {
+  const msg = $("msg"); msg.className = ""; msg.textContent = "";
+  document.querySelectorAll(".miss").forEach(e=>e.classList.remove("miss"));
+  const name = $("name").value.trim(), group = $("group").value.trim(), email = $("email").value.trim();
+  if(!name || !group){ msg.className="err"; msg.textContent="اكتب الاسم والمجموعة أولًا."; return; }
+  if(email && !/^\S+@\S+\.\S+$/.test(email)){ msg.className="err"; msg.textContent="الإيميل غير صحيح. راجعه أو اتركه فارغًا."; return; }
+  const mcq = MCQ.map((_,i)=>val("m"+i)), tf = TF.map((_,i)=>val("t"+i));
+  let firstMiss = null;
+  mcq.forEach((v,i)=>{ if(v===null){ const e=$("qm"+i); e.classList.add("miss"); firstMiss=firstMiss||e; }});
+  tf.forEach((v,i)=>{ if(v===null){ const e=$("qt"+i); e.classList.add("miss"); firstMiss=firstMiss||e; }});
+  if(firstMiss){ msg.className="err"; msg.textContent="فيه أسئلة لسه ما اتجاوبتش (متعلّمة بالأحمر)."; firstMiss.scrollIntoView({block:"center"}); return; }
+  if(SCRIPT_URL.startsWith("PASTE")){ msg.className="err"; msg.textContent="رابط الإرسال لسه ما اتضافش في الملف."; return; }
+  $("send").disabled = true; msg.textContent = "جارٍ الإرسال...";
+  try{
+    const res = await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({name,group,email,mcq,tf})});
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error||"error");
+    $("formArea").style.display="none";
+    const r = $("result"); r.style.display="block";
+    r.innerHTML = `<p>${esc(name)}</p><b>${d.total} / 28</b><p>Q1: ${d.q1} / 18 &nbsp;|&nbsp; Q2: ${d.q2} / 10</p><p>${email ? "تم إرسال الدرجة على إيميلك. لو ما وصلتش شوف الـ Spam." : "تم تسجيل إجاباتك."}</p>`;
+    window.scrollTo(0,0);
+  }catch(e){
+    $("send").disabled = false; msg.className="err";
+    msg.textContent="حصلت مشكلة في الإرسال. تأكد من الإنترنت وجرّب تاني.";
+  }
+};
+</script>
+</body>
+</html>
